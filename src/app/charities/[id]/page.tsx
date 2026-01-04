@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Charity } from '@/lib/supabase/types'
 import { useAuth } from '@/hooks/useAuth'
@@ -10,8 +10,9 @@ import { DonationForm } from './DonationForm'
 export default function CharityDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = use(params)
   const { user } = useAuth()
   const [charity, setCharity] = useState<Charity | null>(null)
   const [loading, setLoading] = useState(true)
@@ -23,7 +24,7 @@ export default function CharityDetailPage({
       const { data, error } = await supabase
         .from('charities')
         .select('*')
-        .eq('charity_id', params.id)
+        .eq('charity_id', id)
         .eq('status', 'approved')
         .single()
 
@@ -32,13 +33,13 @@ export default function CharityDetailPage({
       } else {
         setCharity(data as Charity)
         // Track charity viewed event
-        trackEvent(user?.id || null, 'charity_viewed', { charity_id: params.id })
+        trackEvent(user?.id || null, 'charity_viewed', { charity_id: id })
       }
       setLoading(false)
     }
 
     fetchCharity()
-  }, [params.id, user, supabase])
+  }, [id, user, supabase])
 
   if (loading) {
     return (
@@ -62,6 +63,17 @@ export default function CharityDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Charity Info */}
           <div>
+            {/* Logo */}
+            {charity.photo_url && (
+              <div className="mb-6">
+                <img
+                  src={charity.photo_url}
+                  alt={`${charity.public_name} logo`}
+                  className="w-32 h-32 rounded-lg object-cover border border-slate-200"
+                />
+              </div>
+            )}
+
             <h1 className="text-4xl font-semibold tracking-tight mb-6" style={{ color: '#0B1F3A' }}>
               {charity.public_name}
             </h1>
@@ -84,7 +96,11 @@ export default function CharityDetailPage({
           </div>
 
           {/* Donation Form */}
-          <DonationForm charityId={charity.charity_id} charityName={charity.public_name} />
+          <DonationForm
+            charityId={charity.charity_id}
+            charityName={charity.public_name}
+            currency={charity.currency}
+          />
         </div>
       </div>
     </div>

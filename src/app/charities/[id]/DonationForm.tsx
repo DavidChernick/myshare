@@ -5,17 +5,20 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { trackEvent } from '@/lib/events'
+import { Currency, getCurrencySymbol } from '@/lib/utils/currency'
 import Link from 'next/link'
 
 interface DonationFormProps {
   charityId: string
   charityName: string
+  currency: Currency
 }
 
-export function DonationForm({ charityId, charityName }: DonationFormProps) {
+export function DonationForm({ charityId, charityName, currency }: DonationFormProps) {
   const { user } = useAuth()
   const router = useRouter()
   const supabase = createClient()
+  const currencySymbol = getCurrencySymbol(currency)
 
   const [amount, setAmount] = useState('')
   const [message, setMessage] = useState('')
@@ -43,6 +46,7 @@ export function DonationForm({ charityId, charityName }: DonationFormProps) {
         donor_user_id: user.id,
         charity_id: charityId,
         amount_cents: amountCents,
+        currency,
         message: message || null,
         status: 'paid',
       })
@@ -140,7 +144,7 @@ export function DonationForm({ charityId, charityName }: DonationFormProps) {
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">
-              $
+              {currencySymbol}
             </span>
             <input
               id="amount"

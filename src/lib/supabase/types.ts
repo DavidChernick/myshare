@@ -2,6 +2,17 @@ export interface Profile {
   user_id: string
   role: 'donor' | 'charity' | 'admin'
   full_name: string | null
+  first_name: string | null
+  last_name: string | null
+  id_number: string | null
+  tax_reference: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  province: string | null
+  postal_code: string | null
+  mobile_number: string | null
+  email: string | null
   onboarding_completed_at: string | null
   marketing_source: string | null
   created_at: string
@@ -14,8 +25,17 @@ export interface Charity {
   public_name: string
   description: string | null
   website: string | null
+  registration_number: string | null
+  contact_email: string | null
+  contact_phone: string | null
+  rejection_reason: string | null
+  admin_notes: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
   created_at: string
   approved_at: string | null
+  photo_url: string | null
+  currency: 'USD' | 'ZAR' | 'GBP' | 'EUR'
 }
 
 export interface CharityUser {

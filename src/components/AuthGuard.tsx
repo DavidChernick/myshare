@@ -1,30 +1,33 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { useProfile } from '@/hooks/useProfile'
+
+const PUBLIC_PATHS = new Set(['/auth', '/onboarding', '/charities'])
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth()
-  const { profile, loading: profileLoading } = useProfile(user?.id)
   const router = useRouter()
+  const pathname = usePathname()
+
+  const isPublic = PUBLIC_PATHS.has(pathname) || pathname.startsWith('/charities/')
 
   useEffect(() => {
-    if (authLoading || profileLoading) return
+    if (isPublic) return
+    if (authLoading) return
 
-    if (!user) {
-      router.push('/auth')
-      return
+    // Only redirect to auth if not logged in
+    if (!user && pathname !== '/auth') {
+      router.replace('/auth')
     }
+  }, [isPublic, authLoading, user, router, pathname])
 
-    if (!profile?.onboarding_completed_at) {
-      router.push('/onboarding')
-      return
-    }
-  }, [user, profile, authLoading, profileLoading, router])
+  // Public pages render normally
+  if (isPublic) return <>{children}</>
 
-  if (authLoading || profileLoading) {
+  // Loading state for protected pages
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-slate-600">Loading...</div>
@@ -32,9 +35,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!user || !profile?.onboarding_completed_at) {
-    return null
-  }
+  // If not logged in, block render
+  if (!user) return null
 
+  // User is logged in, let the page handle the rest
   return <>{children}</>
 }

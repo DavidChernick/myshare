@@ -14,9 +14,13 @@ function DashboardRedirect() {
   useEffect(() => {
     if (loading) return
 
-    if (profile?.role === 'donor') {
+    // If no profile or no role, AuthGuard will handle redirecting to onboarding
+    // Don't do anything here to avoid redirect loops
+    if (!profile || !profile.role) return
+
+    if (profile.role === 'donor') {
       router.push('/dashboard/donor')
-    } else if (profile?.role === 'charity') {
+    } else if (profile.role === 'charity') {
       router.push('/dashboard/charity')
     }
   }, [profile, loading, router])

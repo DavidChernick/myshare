@@ -3,10 +3,33 @@
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { usePathname } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
 
 export function Header() {
   const { user, signOut } = useAuth()
   const pathname = usePathname()
+  const [isAdmin, setIsAdmin] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false)
+      return
+    }
+
+    async function checkAdmin() {
+      const { data } = await supabase
+        .from('admin_users')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      setIsAdmin(!!data)
+    }
+
+    checkAdmin()
+  }, [user, supabase])
 
   return (
     <header className="bg-white border-b border-slate-200">
@@ -42,6 +65,18 @@ export function Header() {
                 >
                   Dashboard
                 </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin/charities"
+                    className={`text-sm font-medium transition-colors ${
+                      pathname?.startsWith('/admin')
+                        ? 'text-[#0B1F3A]'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Admin
+                  </Link>
+                )}
                 <button
                   onClick={signOut}
                   className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
