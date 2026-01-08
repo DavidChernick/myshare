@@ -63,3 +63,16 @@ export interface Event {
   metadata: Record<string, any> | null
   created_at: string
 }
+
+export interface TaxCertificate {
+  certificate_id: string
+  donor_user_id: string
+  charity_id: string
+  tax_year: string
+  currency: string
+  total_amount_cents: number
+  certificate_url: string | null
+  status: 'pending' | 'available'
+  issued_at: string | null
+  created_at: string
+}

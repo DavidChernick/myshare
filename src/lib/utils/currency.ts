@@ -19,12 +19,17 @@ export function getCurrencySymbol(currency: Currency | string): string {
  * Format an amount in cents with the appropriate currency symbol
  * @param cents - Amount in cents
  * @param currency - Currency code (USD, ZAR, GBP, EUR)
- * @returns Formatted string like "R100.00" or "$50.50"
+ * @returns Formatted string like "R2,346.00" or "$1,234.50"
  */
 export function formatAmount(cents: number, currency: Currency | string): string {
   const symbol = getCurrencySymbol(currency)
   const amount = (cents / 100).toFixed(2)
-  return `${symbol}${amount}`
+
+  // Add thousand separators
+  const parts = amount.split('.')
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+  return `${symbol}${parts.join('.')}`
 }
 
 /**

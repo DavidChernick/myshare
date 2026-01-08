@@ -19,13 +19,28 @@ export function Header() {
     }
 
     async function checkAdmin() {
-      const { data } = await supabase
-        .from('admin_users')
-        .select('user_id')
-        .eq('user_id', user.id)
-        .maybeSingle()
+      if (!user) return // Safety check for async context
 
-      setIsAdmin(!!data)
+      try {
+        const { data, error } = await supabase
+          .from('admin_users')
+          .select('user_id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        // Treat any error (401/403/406) as not admin
+        if (error) {
+          console.log('[Header] Admin check error (treating as not admin):', error.message)
+          setIsAdmin(false)
+          return
+        }
+
+        setIsAdmin(!!data)
+      } catch (err) {
+        // Handle any unexpected errors
+        console.log('[Header] Admin check failed (treating as not admin):', err)
+        setIsAdmin(false)
+      }
     }
 
     checkAdmin()
